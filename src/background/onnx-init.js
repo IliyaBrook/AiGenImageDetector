@@ -1,5 +1,3 @@
-console.log('ONNX init script for service worker')
-
 if (typeof self !== 'undefined') {
 	try {
 		const wasmPath = chrome.runtime.getURL('js/wasm/')

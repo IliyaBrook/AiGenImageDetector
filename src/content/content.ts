@@ -1,9 +1,4 @@
 console.log('AI Gen Image Detector content script loaded.')
-import refreshOnUpdate from "virtual:reload-on-update-in-view";
-refreshOnUpdate("src/content");
-// import { myTestFunc } from '@src/lib/my-test-func'
-// myTestFunc('called from content script')
-console.log("TEST DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD")
 interface AnalysisResult {
 	isAIGenerated: boolean
 	confidence: number
@@ -559,7 +554,6 @@ const initializeExtension = async (): Promise<void> => {
 			})
 		} else if (response && response.initializing) {
 			console.log('ContentScript: Background ONNX is initializing. Will retry later.')
-
 			retryInitialization()
 		} else {
 			const errorMessage = response?.error || 'Unknown error with ONNX initialization'

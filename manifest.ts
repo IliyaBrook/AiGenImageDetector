@@ -28,7 +28,6 @@ const manifest: chrome.runtime.ManifestV3 = {
 			matches: ['http://*/*', 'https://*/*', '<all_urls>'],
 			js: ['src/content/content.js'],
 			all_frames: true,
-			
 		}
 	],
 	host_permissions: ['*://*/*'],

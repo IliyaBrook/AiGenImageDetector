@@ -3,10 +3,14 @@ import * as path from 'path'
 import { resolve } from 'path'
 import { defineConfig } from 'vite'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
-import manifest from './manifest'
-import addHmr from './src/utils/defaultUtils/plugins/add-hmr'
+import manifestPath from './manifest'
 import makeManifest from './src/utils/defaultUtils/plugins/make-manifest'
-import watchRebuild from './src/utils/defaultUtils/plugins/watch-rebuild'
+// hmr tool
+import {
+	extensionReloaderBuildStep,
+	extensionReloaderWatchExternal,
+	extensionReloaderWebSocket,
+  } from "vite-plugin-extension-reloader";
 
 const isDev = process.env.__DEV__ === 'true'
 const isProduction = !isDev
@@ -16,6 +20,7 @@ const srcDir = resolve(rootDir, 'src')
 const lib = resolve(srcDir, 'lib')
 const assetsDir = resolve(srcDir, 'assets')
 const publicJsDir = resolve(rootDir, 'public')
+
 
 export default defineConfig({
 	resolve: {
@@ -28,12 +33,10 @@ export default defineConfig({
 	},
 	plugins: [
 		react(),
-		makeManifest(manifest, {
+		makeManifest(manifestPath, {
 			isDev,
 			contentScriptCssKey: regenerateCacheInvalidationKey()
 		}),
-		addHmr({ background: isDev, view: true }),
-		watchRebuild(),
 		viteStaticCopy({
 			targets: [
 				{
@@ -41,7 +44,10 @@ export default defineConfig({
 					dest: 'models'
 				}
 			]
-		})
+		}),
+		isDev && extensionReloaderBuildStep('dist/manifest.json'),
+		extensionReloaderWebSocket(),
+		extensionReloaderWatchExternal("src/**/*")
 	],
 	build: {
 		modulePreload: isDev,

@@ -7,8 +7,7 @@
 		"build": "vite build",
 		"build:hmr": "rollup --config src/utils/defaultUtils/reload/rollup.config.mjs",
 		"wss": "node src/utils/defaultUtils/reload/initReloadServer.js",
-		"dev": "pnpm build:hmr && (run-p wss build:watch)",
-		"build:watch": "pnpm build --watch",
+		"dev": "pnpm build --watch",
 		"format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
 		"format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
 		"remove-comments": "node remove-comments.cjs && pnpm run format"
@@ -35,6 +34,7 @@
 		"strip-comments": "github:IliyaBrook/strip-comments",
 		"tslib": "^2.8.1",
 		"vite": "^5.0.0",
+		"vite-plugin-extension-reloader": "^1.1.6",
 		"vite-plugin-static-copy": "^3.0.0",
 		"ws": "8.18.1"
 	}

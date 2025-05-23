@@ -66,6 +66,9 @@ importers:
       vite:
         specifier: ^5.0.0
         version: 5.4.19(@types/node@22.15.21)
+      vite-plugin-extension-reloader:
+        specifier: ^1.1.6
+        version: 1.1.6(vite@5.4.19(@types/node@22.15.21))
       vite-plugin-static-copy:
         specifier: ^3.0.0
         version: 3.0.0(vite@5.4.19(@types/node@22.15.21))
@@ -1026,6 +1029,9 @@ packages:
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
 
+  minimist@1.2.8:
+    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
+
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -1398,6 +1404,12 @@ packages:
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
+
+  vite-plugin-extension-reloader@1.1.6:
+    resolution: {integrity: sha512-HzeGzSraQjeQwjwB7HvGV6I5tRIPP6MokTzsSXEoo/1ErqgiD7cJpu3gt30noiGjpt0GzHuX2VxHJVQHxuM1hQ==}
+    hasBin: true
+    peerDependencies:
+      vite: ^4 || ^5
 
   vite-plugin-static-copy@3.0.0:
     resolution: {integrity: sha512-Uki9pPUQ4ZnoMEdIFabvoh9h6Bh9Q1m3iF7BrZvoiF30reREpJh2gZb4jOnW1/uYFzyRiLCmFSkM+8hwiq1vWQ==}
@@ -2459,6 +2471,8 @@ snapshots:
     dependencies:
       brace-expansion: 1.1.11
 
+  minimist@1.2.8: {}
+
   minipass@7.1.2: {}
 
   ms@2.1.3: {}
@@ -2907,6 +2921,16 @@ snapshots:
     dependencies:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
+
+  vite-plugin-extension-reloader@1.1.6(vite@5.4.19(@types/node@22.15.21)):
+    dependencies:
+      glob: 11.0.2
+      minimist: 1.2.8
+      vite: 5.4.19(@types/node@22.15.21)
+      ws: 8.18.1
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   vite-plugin-static-copy@3.0.0(vite@5.4.19(@types/node@22.15.21)):
     dependencies:
