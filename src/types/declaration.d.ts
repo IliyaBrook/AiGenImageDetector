@@ -1,4 +1,4 @@
-import Chrome from "chrome";
+/// <reference types="vite/client" />
 
 declare module '*.json' {
 	const content: string
@@ -42,16 +42,18 @@ declare global {
 	}
 }
 
-// declare module "@src/global" {
-// 	const refreshOnUpdate: (watchPath: string) => void;
-// 	export default refreshOnUpdate;
-// }
+declare module "@src/global" {
+	const refreshOnUpdate: (watchPath: string) => void;
+	export default refreshOnUpdate;
+}
 
-// declare namespace chrome {
-// 	export default Chrome
-// }
+declare namespace chrome {
+	export default Chrome
+}
 
 declare module "virtual:reload-on-update-in-view" {
 	const refreshOnUpdate: (watchPath: string) => void
 	export default refreshOnUpdate
 }
+
+
