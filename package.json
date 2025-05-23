@@ -4,10 +4,8 @@
 	"version": "1.0.0",
 	"type": "module",
 	"scripts": {
-		"build": "vite build",
-		"build:hmr": "rollup --config src/utils/defaultUtils/reload/rollup.config.mjs",
-		"wss": "node src/utils/defaultUtils/reload/initReloadServer.js",
-		"dev": "pnpm build --watch",
+		"build": "cross-env NODE_ENV=production vite build",
+		"dev": "cross-env NODE_ENV=development pnpm build --watch",
 		"format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
 		"format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
 		"remove-comments": "node remove-comments.cjs && pnpm run format"
@@ -36,6 +34,7 @@
 		"vite": "^5.0.0",
 		"vite-plugin-extension-reloader": "^1.1.6",
 		"vite-plugin-static-copy": "^3.0.0",
-		"ws": "8.18.1"
+		"ws": "8.18.1",
+		"cross-env": "7.0.3"
 	}
 }
