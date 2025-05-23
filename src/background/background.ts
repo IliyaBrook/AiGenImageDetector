@@ -101,7 +101,6 @@ async function initializeOnnx() {
 		console.log('Background: WASM environment configured', wasmConfig)
 
 		ortLib = await loadOnnxRuntime()
-		console.log('Background: ONNX Runtime loaded', ortLib)
 
 		const options = {
 			executionProviders: ['webnn', 'wasm'],
