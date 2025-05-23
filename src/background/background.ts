@@ -21,7 +21,7 @@ interface AnalysisResult {
 async function initOnnxWasmEnvironment() {
 	const isServiceWorker = typeof window === 'undefined' || typeof window.document === 'undefined'
 	const supportThreads = !isServiceWorker && navigator.hardwareConcurrency > 1
-    
+
 	if (typeof self !== 'undefined') {
 		//@ts-ignore
 		self.ortWasmBackendFolder = WASM_PATH
@@ -96,7 +96,6 @@ async function initializeOnnx() {
 	initError = null
 
 	try {
-
 		const wasmConfig = await initOnnxWasmEnvironment()
 		console.log('Background: WASM environment configured', wasmConfig)
 
@@ -248,108 +247,106 @@ function normalizeAndConvert(data: Uint8ClampedArray, size: number): Float32Arra
 	return floatData
 }
 
-// not used for now
-async function detectFaces(imageData: globalThis.ImageData): Promise<boolean> {
-	try {
-		const { data, width, height } = imageData
+// async function detectFaces(imageData: globalThis.ImageData): Promise<boolean> {
+// 	try {
+// 		const { data, width, height } = imageData
 
-		const centerX = Math.floor(width / 2)
-		const centerY = Math.floor(height / 2)
-		const regionSize = Math.min(width, height) / 4
+// 		const centerX = Math.floor(width / 2)
+// 		const centerY = Math.floor(height / 2)
+// 		const regionSize = Math.min(width, height) / 4
 
-		let skinTonePixels = 0
-		let totalPixels = 0
+// 		let skinTonePixels = 0
+// 		let totalPixels = 0
 
-		for (
-			let y = Math.max(0, centerY - regionSize);
-			y < Math.min(height, centerY + regionSize);
-			y++
-		) {
-			for (
-				let x = Math.max(0, centerX - regionSize);
-				x < Math.min(width, centerX + regionSize);
-				x++
-			) {
-				const index = (y * width + x) * 4
-				const r = data[index]
-				const g = data[index + 1]
-				const b = data[index + 2]
+// 		for (
+// 			let y = Math.max(0, centerY - regionSize);
+// 			y < Math.min(height, centerY + regionSize);
+// 			y++
+// 		) {
+// 			for (
+// 				let x = Math.max(0, centerX - regionSize);
+// 				x < Math.min(width, centerX + regionSize);
+// 				x++
+// 			) {
+// 				const index = (y * width + x) * 4
+// 				const r = data[index]
+// 				const g = data[index + 1]
+// 				const b = data[index + 2]
 
-				if (
-					r > 95 &&
-					g > 40 &&
-					b > 20 &&
-					Math.max(r, g, b) - Math.min(r, g, b) > 15 &&
-					Math.abs(r - g) > 15 &&
-					r > g &&
-					r > b
-				) {
-					skinTonePixels++
-				}
-				totalPixels++
-			}
-		}
+// 				if (
+// 					r > 95 &&
+// 					g > 40 &&
+// 					b > 20 &&
+// 					Math.max(r, g, b) - Math.min(r, g, b) > 15 &&
+// 					Math.abs(r - g) > 15 &&
+// 					r > g &&
+// 					r > b
+// 				) {
+// 					skinTonePixels++
+// 				}
+// 				totalPixels++
+// 			}
+// 		}
 
-		const skinToneRatio = skinTonePixels / totalPixels
-		const hasFace = skinToneRatio > 0.1
+// 		const skinToneRatio = skinTonePixels / totalPixels
+// 		const hasFace = skinToneRatio > 0.1
 
-		console.log(
-			`Background: Face detection - skin tone ratio: ${skinToneRatio.toFixed(3)}, has face: ${hasFace}`
-		)
-		return hasFace
-	} catch (error) {
-		console.warn('Background: Error in face detection, proceeding with analysis:', error)
-		return true
-	}
-}
+// 		console.log(
+// 			`Background: Face detection - skin tone ratio: ${skinToneRatio.toFixed(3)}, has face: ${hasFace}`
+// 		)
+// 		return hasFace
+// 	} catch (error) {
+// 		console.warn('Background: Error in face detection, proceeding with analysis:', error)
+// 		return true
+// 	}
+// }
 
-// not used for now
-async function isPhotographicImage(imageData: globalThis.ImageData): Promise<boolean> {
-	try {
-		const { data, width, height } = imageData
+// async function isPhotographicImage(imageData: globalThis.ImageData): Promise<boolean> {
+// 	try {
+// 		const { data, width, height } = imageData
 
-		const colorSet = new Set<string>()
-		let gradientSum = 0
-		let gradientCount = 0
+// 		const colorSet = new Set<string>()
+// 		let gradientSum = 0
+// 		let gradientCount = 0
 
-		for (let y = 0; y < height; y += 10) {
-			for (let x = 0; x < width; x += 10) {
-				const index = (y * width + x) * 4
-				const r = data[index]
-				const g = data[index + 1]
-				const b = data[index + 2]
+// 		for (let y = 0; y < height; y += 10) {
+// 			for (let x = 0; x < width; x += 10) {
+// 				const index = (y * width + x) * 4
+// 				const r = data[index]
+// 				const g = data[index + 1]
+// 				const b = data[index + 2]
 
-				const color = `${Math.floor(r / 8) * 8}-${Math.floor(g / 8) * 8}-${Math.floor(b / 8) * 8}`
-				colorSet.add(color)
+// 				const color = `${Math.floor(r / 8) * 8}-${Math.floor(g / 8) * 8}-${Math.floor(b / 8) * 8}`
+// 				colorSet.add(color)
 
-				if (x < width - 10 && y < height - 10) {
-					const nextXIndex = (y * width + x + 10) * 4
-					const nextYIndex = ((y + 10) * width + x) * 4
+// 				if (x < width - 10 && y < height - 10) {
+// 					const nextXIndex = (y * width + x + 10) * 4
+// 					const nextYIndex = ((y + 10) * width + x) * 4
 
-					const gradX = Math.abs(data[index] - data[nextXIndex])
-					const gradY = Math.abs(data[index] - data[nextYIndex])
-					gradientSum += gradX + gradY
-					gradientCount++
-				}
-			}
-		}
+// 					const gradX = Math.abs(data[index] - data[nextXIndex])
+// 					const gradY = Math.abs(data[index] - data[nextYIndex])
+// 					gradientSum += gradX + gradY
+// 					gradientCount++
+// 				}
+// 			}
+// 		}
 
-		const uniqueColors = colorSet.size
-		const avgGradient = gradientCount > 0 ? gradientSum / gradientCount : 0
-		const sampledPixels = Math.ceil(width / 10) * Math.ceil(height / 10)
-		const colorDiversity = uniqueColors / sampledPixels
+// 		const uniqueColors = colorSet.size
+// 		const avgGradient = gradientCount > 0 ? gradientSum / gradientCount : 0
+// 		const sampledPixels = Math.ceil(width / 10) * Math.ceil(height / 10)
+// 		const colorDiversity = uniqueColors / sampledPixels
 
-		const isPhoto = colorDiversity > 0.3 && avgGradient > 5
+// 		const isPhoto = colorDiversity > 0.3 && avgGradient > 5
 
-		console.log(
-			`Background: Image type analysis - colors: ${uniqueColors}, diversity: ${colorDiversity.toFixed(3)}, gradient: ${avgGradient.toFixed(1)}, is photo: ${isPhoto}`
-		)
-		return isPhoto
-	} catch (error) {
-		console.warn('Background: Error in image type detection, proceeding with analysis:', error)
-		return true
-	}
-}
+// 		console.log(
+// 			`Background: Image type analysis - colors: ${uniqueColors}, diversity: ${colorDiversity.toFixed(3)}, gradient: ${avgGradient.toFixed(1)}, is photo: ${isPhoto}`
+// 		)
+// 		return isPhoto
+// 	} catch (error) {
+// 		console.warn('Background: Error in image type detection, proceeding with analysis:', error)
+// 		return true
+// 	}
+// }
 
 async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisResult> {
 	try {
@@ -397,7 +394,7 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 			width: imageData.width,
 			height: imageData.height,
 		})
-        // Todo rm this fund for now
+		// Todo rm this fund for now
 		// const isPhoto = await isPhotographicImage(imageData)
 		// if (!isPhoto) {
 		// 	console.log(
@@ -416,7 +413,6 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 		// 	return {
 		// 		isAIGenerated: false,
 		// 		confidence: 0,
-		// 		error: 'Skipped: No faces detected',
 		// 	}
 		// }
 
@@ -428,31 +424,203 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 
 		const outputData = results[ortSession.outputNames[0]].data as Float32Array
 
+		const applySoftmax = (logits: Float32Array): [number, number] => {
+			const exp0 = Math.exp(logits[0])
+			const exp1 = Math.exp(logits[1])
+			const sum = exp0 + exp1
+			return [exp0 / sum, exp1 / sum]
+		}
+
+		const applySigmoidDiff = (logits: Float32Array): [number, number] => {
+			const diff = logits[0] - logits[1]
+			const fakeProb = 1 / (1 + Math.exp(-diff))
+			return [fakeProb, 1 - fakeProb]
+		}
+
 		let deepfakeScore: number
 		let realScore: number
 
 		if (outputData.length >= 2) {
-			deepfakeScore = outputData[0]
-			realScore = outputData[1]
+			const [softmax0, softmax1] = applySoftmax(outputData)
+			const [sigmoidFake, sigmoidReal] = applySigmoidDiff(outputData)
+
+			console.log('Raw logits fake:', outputData[0])
+			console.log('Raw logits real:', outputData[1])
+			console.log('Softmax (0=fake, 1=real) fake:', softmax0)
+			console.log('Softmax (0=fake, 1=real) real:', softmax1)
+			console.log('Softmax (0=real, 1=fake) fake:', softmax1)
+			console.log('Softmax (0=real, 1=fake) real:', softmax0)
+			console.log('Sigmoid diff (fake-real): fake ', sigmoidFake)
+			console.log('Sigmoid diff (fake-real): real ', sigmoidReal)
+
+			const processingMethod = await new Promise<string>(resolve => {
+				chrome.storage.local.get(['processingMethod'], (data: { processingMethod?: string }) => {
+					resolve(data.processingMethod || 'inverted_softmax')
+				})
+			})
+
+			if (processingMethod === 'inverted_softmax') {
+				const testLogitDifference = outputData[0] - outputData[1]
+				const testThreshold = 0.6
+
+				if (testLogitDifference > testThreshold) {
+					deepfakeScore = 0.2
+					realScore = 0.8
+				} else {
+					deepfakeScore = 0.8
+					realScore = 0.2
+				}
+
+				console.log(
+					`Inverted: logit_diff=${testLogitDifference.toFixed(3)}, threshold=${testThreshold}, result=${testLogitDifference > testThreshold ? 'REAL' : 'FAKE'}`
+				)
+			} else if (processingMethod === 'adaptive') {
+				deepfakeScore = softmax1
+				realScore = softmax0
+
+				const adaptiveLogitDiff = Math.abs(outputData[0] - outputData[1])
+				if (adaptiveLogitDiff < 0.2) {
+					deepfakeScore *= 0.8
+					realScore *= 0.8
+				} else if (adaptiveLogitDiff > 0.8) {
+					deepfakeScore = Math.min(deepfakeScore * 1.1, 1.0)
+					realScore = Math.min(realScore * 1.1, 1.0)
+				}
+
+				console.log('Adaptive: Using corrected interpretation (0=real, 1=fake)')
+			} else {
+				switch (processingMethod) {
+					case 'softmax_0_real':
+						deepfakeScore = softmax1
+						realScore = softmax0
+						break
+					case 'softmax_0_fake':
+						deepfakeScore = softmax0
+						realScore = softmax1
+						break
+					case 'sigmoid_diff':
+						const sigmoidLogitDiff = outputData[0] - outputData[1]
+						const sigmoidValue = 1 / (1 + Math.exp(-sigmoidLogitDiff))
+
+						if (sigmoidLogitDiff > 0.6) {
+							deepfakeScore = 1 - sigmoidValue
+							realScore = sigmoidValue
+						} else if (sigmoidLogitDiff > 0.3) {
+							deepfakeScore = 1 - sigmoidValue * 0.8
+							realScore = sigmoidValue * 0.8
+						} else {
+							deepfakeScore = sigmoidValue
+							realScore = 1 - sigmoidValue
+						}
+						console.log(
+							`Sigmoid diff enhanced: logitDiff=${sigmoidLogitDiff.toFixed(3)}, sigmoid=${sigmoidValue.toFixed(3)}`
+						)
+						break
+					case 'raw_logits':
+						deepfakeScore = outputData[0] > 0 ? outputData[0] : 0
+						realScore = outputData[1] > 0 ? outputData[1] : 0
+						if (deepfakeScore + realScore === 0) {
+							deepfakeScore = 0.5
+							realScore = 0.5
+						}
+						break
+				}
+			}
+
+			console.log(`Using processing method: ${processingMethod}`)
 		} else {
 			const logit = outputData[0]
 			deepfakeScore = 1 / (1 + Math.exp(-logit))
 			realScore = 1 - deepfakeScore
 		}
 
-		const confidence = deepfakeScore
-		const isAIGenerated = deepfakeScore > realScore
+		const mainLogitDiff = Math.abs(outputData[0] - outputData[1])
+		const logitMax = Math.max(Math.abs(outputData[0]), Math.abs(outputData[1]))
 
-		console.log('Background: Analysis complete', {
+		let adaptiveThreshold = 0.6
+
+		if (mainLogitDiff > 0.5 && logitMax > 0.3) {
+			adaptiveThreshold = 0.55
+		} else if (mainLogitDiff < 0.2 || logitMax < 0.15) {
+			adaptiveThreshold = 0.75
+		}
+
+		const userThreshold = await new Promise<number>(resolve => {
+			chrome.storage.local.get(
+				['confidenceThreshold'],
+				(data: { confidenceThreshold?: number }) => {
+					resolve(data.confidenceThreshold || adaptiveThreshold)
+				}
+			)
+		})
+
+		const finalThreshold = userThreshold
+		const confidence = Math.max(deepfakeScore, realScore)
+
+		let isAIGenerated = false
+		let decisionReason = ''
+
+		const confidenceDiff = Math.abs(deepfakeScore - realScore)
+		const isWeakSignal = confidenceDiff < 0.1
+
+		if (isWeakSignal) {
+			const weakSignalThreshold = 0.8
+			if (deepfakeScore > realScore && deepfakeScore >= weakSignalThreshold) {
+				isAIGenerated = true
+				decisionReason = `Weak signal fake with high threshold (${deepfakeScore.toFixed(3)} >= ${weakSignalThreshold})`
+			} else {
+				isAIGenerated = false
+				decisionReason = `Weak signal, classified as real (diff: ${confidenceDiff.toFixed(3)})`
+			}
+		} else {
+			if (deepfakeScore > realScore) {
+				if (deepfakeScore >= finalThreshold) {
+					isAIGenerated = true
+					decisionReason = `High confidence fake (${deepfakeScore.toFixed(3)} >= ${finalThreshold})`
+				} else {
+					isAIGenerated = false
+					decisionReason = `Low confidence fake (${deepfakeScore.toFixed(3)} < ${finalThreshold})`
+				}
+			} else {
+				isAIGenerated = false
+				decisionReason = `Real predicted (real: ${realScore.toFixed(3)} > fake: ${deepfakeScore.toFixed(3)})`
+			}
+		}
+
+		console.log('Background: Analysis complete:', {
 			deepfakeScore: deepfakeScore.toFixed(3),
 			realScore: realScore.toFixed(3),
 			isAIGenerated,
 			confidence: confidence.toFixed(3),
+			confidenceDiff: confidenceDiff.toFixed(3),
+			isWeakSignal,
+			threshold: finalThreshold,
+			adaptiveThreshold: adaptiveThreshold.toFixed(3),
+			decisionReason,
+			signalStrength: {
+				logitDiff: mainLogitDiff.toFixed(3),
+				logitMax: logitMax.toFixed(3),
+			},
+			rawLogits: { fake: outputData[0], real: outputData[1] },
 		})
+
+		const analysisDetails = {
+			rawLogits: [outputData[0], outputData[1]],
+			processingMethod: await new Promise<string>(resolve => {
+				chrome.storage.local.get(['processingMethod'], (data: { processingMethod?: string }) => {
+					resolve(data.processingMethod || 'inverted_softmax')
+				})
+			}),
+			deepfakeScore,
+			realScore,
+			confidence,
+			isAIGenerated,
+		}
 
 		return {
 			isAIGenerated,
 			confidence,
+			...analysisDetails,
 		}
 	} catch (error: any) {
 		console.error('Background: Error during image analysis:', error)
@@ -582,6 +750,124 @@ chrome.runtime.onMessage.addListener(
 						? 'ONNX Runtime loaded but InferenceSession.create not available'
 						: null,
 			})
+			return false
+		}
+
+		if (message.type === 'TEST_PROCESSING_METHODS') {
+			const { testData } = message
+
+			const methods = [
+				'inverted_softmax',
+				'adaptive',
+				'softmax_0_fake',
+				'softmax_0_real',
+				'sigmoid_diff',
+				'raw_logits',
+			]
+			const results: Record<string, any> = {}
+
+			for (const method of methods) {
+				results[method] = {
+					correct: 0,
+					total: testData.length,
+					predictions: [],
+				}
+
+				for (const data of testData) {
+					const [logit0, logit1] = data.logits
+					let deepfakeScore: number
+					let realScore: number
+
+					const exp0 = Math.exp(logit0)
+					const exp1 = Math.exp(logit1)
+					const sum = exp0 + exp1
+					const softmax0 = exp0 / sum
+					const softmax1 = exp1 / sum
+
+					const diff = logit0 - logit1
+					const sigmoidFake = 1 / (1 + Math.exp(-diff))
+					const sigmoidReal = 1 - sigmoidFake
+
+					switch (method) {
+						case 'inverted_softmax':
+							const testLogitDifference = logit0 - logit1
+							const testThreshold = 0.6
+
+							if (testLogitDifference > testThreshold) {
+								deepfakeScore = 0.2
+								realScore = 0.8
+							} else {
+								deepfakeScore = 0.8
+								realScore = 0.2
+							}
+							break
+						case 'adaptive':
+							deepfakeScore = softmax1
+							realScore = softmax0
+
+							const logitDiff = Math.abs(logit0 - logit1)
+							if (logitDiff < 0.2) {
+								deepfakeScore *= 0.8
+								realScore *= 0.8
+							} else if (logitDiff > 0.8) {
+								deepfakeScore = Math.min(deepfakeScore * 1.1, 1.0)
+								realScore = Math.min(realScore * 1.1, 1.0)
+							}
+							break
+						case 'softmax_0_real':
+							deepfakeScore = softmax1
+							realScore = softmax0
+							break
+						case 'softmax_0_fake':
+							deepfakeScore = softmax0
+							realScore = softmax1
+							break
+						case 'sigmoid_diff':
+							const sigmoidLogitDiff = logit0 - logit1
+							const sigmoidValue = 1 / (1 + Math.exp(-sigmoidLogitDiff))
+
+							if (sigmoidLogitDiff > 0.6) {
+								deepfakeScore = 1 - sigmoidValue
+								realScore = sigmoidValue
+							} else if (sigmoidLogitDiff > 0.3) {
+								deepfakeScore = 1 - sigmoidValue * 0.8
+								realScore = sigmoidValue * 0.8
+							} else {
+								deepfakeScore = sigmoidValue
+								realScore = 1 - sigmoidValue
+							}
+							console.log(
+								`Sigmoid diff enhanced: logitDiff=${sigmoidLogitDiff.toFixed(3)}, sigmoid=${sigmoidValue.toFixed(3)}`
+							)
+							break
+						case 'raw_logits':
+							deepfakeScore = logit0
+							realScore = logit1
+							break
+					}
+
+					const predicted = deepfakeScore > realScore
+					const isCorrect = predicted === data.expected
+
+					results[method].predictions.push({
+						logits: data.logits,
+						expected: data.expected,
+						predicted,
+						isCorrect,
+						deepfakeScore: deepfakeScore.toFixed(3),
+						realScore: realScore.toFixed(3),
+					})
+
+					if (isCorrect) results[method].correct++
+				}
+
+				results[method].accuracy = (
+					(results[method].correct / results[method].total) *
+					100
+				).toFixed(1)
+			}
+
+			sendResponse({ success: true, results })
 			return false
 		}
 

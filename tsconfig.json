@@ -18,7 +18,6 @@
     "paths": {
       "@src/*": ["src/*"],
       "virtual:reload-on-update-in-background-script": ["./src/global.d.ts"],
-      // "virtual:reload-on-update-in-view": ["./src/global.d.ts"],
       "@utils": ["src/utils/projectUtils"],
       "@public": ["public"]
     }
