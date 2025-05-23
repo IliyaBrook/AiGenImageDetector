@@ -7,7 +7,7 @@
 		"build": "vite build",
 		"build:hmr": "rollup --config src/utils/defaultUtils/reload/rollup.config.mjs",
 		"wss": "node src/utils/defaultUtils/reload/initReloadServer.js",
-		"dev": "yarn build:hmr && (run-p wss build:watch)",
+		"dev": "pnpm build:hmr && (run-p wss build:watch)",
 		"build:watch": "pnpm build --watch",
 		"format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
 		"format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",

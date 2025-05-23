@@ -420,18 +420,18 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 			width: imageData.width,
 			height: imageData.height,
 		})
-
-		const isPhoto = await isPhotographicImage(imageData)
-		if (!isPhoto) {
-			console.log(
-				'Background: Skipping analysis - image appears to be a graphic/drawing, not a photograph'
-			)
-			return {
-				isAIGenerated: false,
-				confidence: 0,
-				error: 'Skipped: Not a photographic image',
-			}
-		}
+        // Todo rm this fund for now
+		// const isPhoto = await isPhotographicImage(imageData)
+		// if (!isPhoto) {
+		// 	console.log(
+		// 		'Background: Skipping analysis - image appears to be a graphic/drawing, not a photograph'
+		// 	)
+		// 	return {
+		// 		isAIGenerated: false,
+		// 		confidence: 0,
+		// 		error: 'Skipped: Not a photographic image',
+		// 	}
+		// }
 
 		const hasFaces = await detectFaces(imageData)
 		if (!hasFaces) {
