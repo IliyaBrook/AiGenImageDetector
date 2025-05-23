@@ -556,12 +556,6 @@ const initializeExtension = async (): Promise<void> => {
 			console.log('ContentScript: Background ONNX is initializing. Will retry later.')
 			retryInitialization()
 		} else {
-			const errorMessage = response?.error || 'Unknown error with ONNX initialization'
-			console.error('ContentScript: Background ONNX failed to initialize:', errorMessage)
-
-			console.log(
-				'ContentScript: Will proceed with image analysis despite ONNX initialization issues'
-			)
 			setupImageAnalysis()
 			mutationObserver.observe(document.body, {
 				childList: true,
@@ -579,7 +573,7 @@ if (document.readyState === 'loading') {
 	initializeExtension()
 }
 
-;(window as Window & typeof globalThis & any).aiGenDetectorContent = {
+(window as Window & typeof globalThis & any).aiGenDetectorContent = {
 	analyzeImage,
 	setupImageAnalysis,
 	processedImages,

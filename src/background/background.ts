@@ -3,11 +3,6 @@ import '../background/onnx-init.js'
 import * as ort from 'onnxruntime-web/all'
 declare const chrome: any
 
-import { myTestFunc } from '@src/lib/my-test-func'
-myTestFunc('called from background script')
-
-console.log('Background script started')
-
 let ortSession: any = null
 let ortLib: any = null
 let isInitialized = false
@@ -24,7 +19,6 @@ interface AnalysisResult {
 }
 
 async function initOnnxWasmEnvironment() {
-	console.log('Initializing ONNX WASM environment')
 	const isServiceWorker = typeof window === 'undefined' || typeof window.document === 'undefined'
 	const supportThreads = !isServiceWorker && navigator.hardwareConcurrency > 1
     
@@ -39,7 +33,6 @@ async function initOnnxWasmEnvironment() {
 		globalThis.ortWasmBackendFolder = WASM_PATH
 		globalThis.ortDisableThreads = !supportThreads
 	}
-	console.log('ONNX WASM environment configured:', { WASM_PATH, supportThreads })
 	return {
 		wasmPaths: WASM_PATH,
 		enableThreads: supportThreads,
@@ -49,8 +42,6 @@ async function initOnnxWasmEnvironment() {
 
 async function loadOnnxRuntime() {
 	try {
-		console.log('Loading ONNX Runtime')
-
 		if (
 			!ort ||
 			typeof ort !== 'object' ||
@@ -62,7 +53,6 @@ async function loadOnnxRuntime() {
 			)
 		}
 
-		console.log('ONNX Runtime is loaded successfully via static import.')
 		return ort
 	} catch (err) {
 		console.error('Background: Failed to prepare ONNX runtime:', err)
@@ -71,7 +61,6 @@ async function loadOnnxRuntime() {
 }
 
 async function loadOnnxModel(currentOrtLib: any, options: any): Promise<any> {
-	console.log('Loading AI detection model from:', MODEL_URL)
 	try {
 		const modelArrayBuffer = await fetch(MODEL_URL).then(response => {
 			if (!response.ok) {
@@ -79,15 +68,10 @@ async function loadOnnxModel(currentOrtLib: any, options: any): Promise<any> {
 			}
 			return response.arrayBuffer()
 		})
-		console.log(`Model loaded, size: ${modelArrayBuffer.byteLength} bytes`)
-
 		const session = await currentOrtLib.InferenceSession.create(
 			new Uint8Array(modelArrayBuffer),
 			options
 		)
-		console.log('ONNX Session initialized')
-		console.log('Model inputs:', session.inputNames)
-		console.log('Model outputs:', session.outputNames)
 		return session
 	} catch (error) {
 		console.error('Failed to load ONNX model:', error)
@@ -112,7 +96,6 @@ async function initializeOnnx() {
 	initError = null
 
 	try {
-		console.log('Background: Starting ONNX initialization')
 
 		const wasmConfig = await initOnnxWasmEnvironment()
 		console.log('Background: WASM environment configured', wasmConfig)
@@ -266,6 +249,7 @@ function normalizeAndConvert(data: Uint8ClampedArray, size: number): Float32Arra
 	return floatData
 }
 
+// not used for now
 async function detectFaces(imageData: globalThis.ImageData): Promise<boolean> {
 	try {
 		const { data, width, height } = imageData
@@ -320,6 +304,7 @@ async function detectFaces(imageData: globalThis.ImageData): Promise<boolean> {
 	}
 }
 
+// not used for now
 async function isPhotographicImage(imageData: globalThis.ImageData): Promise<boolean> {
 	try {
 		const { data, width, height } = imageData
@@ -390,15 +375,6 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 			}
 		}
 
-		console.log(
-			'Background: Loading image from:',
-			typeof imageUrlOrData === 'string'
-				? imageUrlOrData.length > 100
-					? imageUrlOrData.substring(0, 100) + '...'
-					: imageUrlOrData
-				: '[imageData]'
-		)
-
 		const image = await loadImageFromUrl(imageUrlOrData)
 		if (!image) {
 			console.error('Background: Failed to load image')
@@ -408,7 +384,6 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 				confidence: 0,
 			}
 		}
-		console.log('Background: Image loaded successfully')
 
 		const imageData = imageToImageData(image)
 		if (!imageData) {
@@ -436,32 +411,23 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 		// 	}
 		// }
 
-		const hasFaces = await detectFaces(imageData)
-		if (!hasFaces) {
-			console.log('Background: Skipping analysis - no faces detected in image')
-			return {
-				isAIGenerated: false,
-				confidence: 0,
-				error: 'Skipped: No faces detected',
-			}
-		}
+		// const hasFaces = await detectFaces(imageData)
+		// if (!hasFaces) {
+		// 	console.log('Background: Skipping analysis - no faces detected in image')
+		// 	return {
+		// 		isAIGenerated: false,
+		// 		confidence: 0,
+		// 		error: 'Skipped: No faces detected',
+		// 	}
+		// }
 
 		const preprocessedImage = await preprocessImage(imageData)
-		console.log('Background: Image preprocessed successfully')
-
 		const inputTensor = new ortLib.Tensor('float32', preprocessedImage, [1, 3, 224, 224])
-		console.log('Background: Input tensor created')
-
 		const feeds = {}
 		feeds[ortSession.inputNames[0]] = inputTensor
-
-		console.log('Background: Running model inference with ONNX Runtime')
-
 		const results = await ortSession.run(feeds)
-		console.log('Background: Model inference completed')
 
 		const outputData = results[ortSession.outputNames[0]].data as Float32Array
-		console.log('Background: Got output data:', outputData)
 
 		let deepfakeScore: number
 		let realScore: number
@@ -638,5 +604,3 @@ initializeOnnx()
 chrome.runtime.onInstalled.addListener(() => {
 	console.log('AI Image Detector extension installed/updated.')
 })
-
-console.log('Background script initialization complete')
