@@ -3,6 +3,9 @@ import '../background/onnx-init.js'
 import * as ort from 'onnxruntime-web/all'
 declare const chrome: any
 
+import { myTestFunc } from '@src/lib/my-test-func'
+myTestFunc('called from background script')
+
 console.log('Background script started')
 
 let ortSession: any = null

@@ -7,6 +7,7 @@ import manifest from './manifest'
 import addHmr from './src/utils/defaultUtils/plugins/add-hmr'
 import makeManifest from './src/utils/defaultUtils/plugins/make-manifest'
 import watchRebuild from './src/utils/defaultUtils/plugins/watch-rebuild'
+import customDynamicImport from "./src/utils/defaultUtils/plugins/custom-dynamic-import";
 
 const isDev = process.env.__DEV__ === 'true'
 const isProduction = !isDev
@@ -32,7 +33,7 @@ export default defineConfig({
 			isDev,
 			contentScriptCssKey: regenerateCacheInvalidationKey()
 		}),
-		
+		customDynamicImport(),
 		addHmr({ background: isDev, view: true }),
 		watchRebuild(),
 		viteStaticCopy({
@@ -44,7 +45,6 @@ export default defineConfig({
 			]
 		})
 	],
-	
 	build: {
 		modulePreload: isDev,
 		minify: isProduction,

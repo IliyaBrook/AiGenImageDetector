@@ -1,5 +1,7 @@
 console.log('AI Gen Image Detector content script loaded.')
-
+import refreshOnUpdate from "virtual:reload-on-update-in-view";
+import { myTestFunc } from '@src/lib/my-test-func'
+myTestFunc('called from content script')
 interface AnalysisResult {
 	isAIGenerated: boolean
 	confidence: number

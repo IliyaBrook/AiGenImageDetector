@@ -1,6 +1,8 @@
+import Chrome from "chrome";
+
 declare module '*.json' {
-	const value: any
-	export default value
+	const content: string
+	export default content
 }
 
 declare module '@public/js/ort.min.js' {
@@ -38,4 +40,18 @@ declare global {
 		ortWasmBackendFolder?: string
 		ortDisableThreads?: boolean
 	}
+}
+
+// declare module "@src/global" {
+// 	const refreshOnUpdate: (watchPath: string) => void;
+// 	export default refreshOnUpdate;
+// }
+
+// declare namespace chrome {
+// 	export default Chrome
+// }
+
+declare module "virtual:reload-on-update-in-view" {
+	const refreshOnUpdate: (watchPath: string) => void
+	export default refreshOnUpdate
 }
