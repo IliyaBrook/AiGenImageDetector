@@ -30,7 +30,6 @@ function Logs(): JSX.Element {
 
   useEffect(() => {
     loadLogs();
-
     const storageListener = (changes: {
       [key: string]: chrome.storage.StorageChange;
     }) => {

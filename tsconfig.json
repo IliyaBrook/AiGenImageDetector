@@ -25,4 +25,4 @@
   },
   "include": ["src", "public", "src/types/**/*"],
   "exclude": ["node_modules", "dist"]
-} 
+}

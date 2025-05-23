@@ -13,7 +13,7 @@ const isProduction = !isDev
 
 const rootDir = resolve(__dirname)
 const srcDir = resolve(rootDir, 'src')
-const projectUtilsDir = resolve(srcDir, 'utils', 'projectUtils')
+const lib = resolve(srcDir, 'lib')
 const assetsDir = resolve(srcDir, 'assets')
 const publicJsDir = resolve(rootDir, 'public')
 
@@ -22,7 +22,7 @@ export default defineConfig({
 		alias: {
 			'@src': srcDir,
 			'@assets': assetsDir,
-			'@utils': projectUtilsDir,
+			'@lib': lib,
 			'@public': publicJsDir
 		}
 	},

@@ -1,4 +1,4 @@
-
+// @ts-ignore
 import packageJson from './package.json'
 
 const typedPackageJson = packageJson as typeof packageJson & { description: string }
