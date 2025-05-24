@@ -1,14 +1,36 @@
 # AI Generated Image Detector - Chrome Extension
 
-Chrome extension for real-time detection of AI-generated images.
+Chrome extension for real-time detection of AI-generated images with modern UI.
 
-## Features
+## ✨ Features
 
 - ✅ **AI Image Detection** - Analyze images using ONNX model
-- 🎯 **Smart Face Detection** - Optional filter for images without human faces
+- 🎯 **Smart Face Detection** - Optional filter for images without human faces  
 - ⚡ **High Performance** - Optimized algorithms for web browsers
 - 🎨 **Visual Indicators** - Red robot icons 🤖 on detected AI images
 - ⚙️ **Flexible Settings** - Choose detection methods and confidence thresholds
+- 🌟 **Modern UI** - Beautiful gradient design with auto-save settings
+
+## 🎨 UI/UX Features
+
+### Modern Design
+- **Beautiful gradients** - Purple-blue gradient background
+- **Glass morphism** - Translucent panels with backdrop blur
+- **Smooth animations** - Hover effects and transitions
+- **Responsive layout** - Adapts to different screen sizes
+- **Accessibility** - Proper labels, focus states, keyboard navigation
+
+### Auto-Save Settings
+- **Instant save** - All settings auto-save on change
+- **No manual save** - No need to click "Save" button
+- **Visual feedback** - Shows "💾 Auto-saving..." indicator
+- **Persistent storage** - Settings survive browser restarts
+
+### Improved UX
+- **Emojis & icons** - Visual indicators throughout interface
+- **Clear feedback** - Color-coded warnings and status messages
+- **Modern typography** - System fonts for better readability
+- **Optimized sizing** - 380px width, scrollable content
 
 ## Face Detection Methods
 
@@ -34,17 +56,17 @@ Chrome extension for real-time detection of AI-generated images.
 Available settings in extension popup:
 
 ### AI Detection Settings
-- **Enable face detection filter**: Turn on/off face filtering completely
+- **🤖 Enable face detection filter**: Turn on/off face filtering completely
   - ✅ **Enabled**: Only analyze images with detected faces (excludes graphics/drawings)
   - ❌ **Disabled**: Analyze all images (may include non-photographic content)
-- **Face Detection Method**: Choose between Enhanced Heuristic and MediaPipe
-- **Detection Threshold**: Confidence threshold (10-90%)
+- **🔍 Face Detection Method**: Choose between Enhanced Heuristic and MediaPipe
+- **🎯 Detection Threshold**: Confidence threshold slider (10-90%)
   - Sensitive (10-50%): Detects more images
   - Balanced (50-70%): Balanced approach
   - Conservative (70-90%): Only high-confidence results
 
 ### Image Size Filter Settings  
-- **Enable minimum image size filter**: Size-based filtering
+- **📐 Enable minimum image size filter**: Size-based filtering
 - **Min width/height**: Minimum dimensions in pixels
 
 ## How It Works
@@ -66,6 +88,8 @@ Available settings in extension popup:
 - **WebAssembly**: Performance optimization
 - **Service Workers**: Background processing
 - **Content Scripts**: Image analysis on web pages
+- **Modern CSS**: Glass morphism, gradients, animations
+- **Auto-save**: Chrome storage API with instant persistence
 
 ## Project Structure
 
@@ -73,8 +97,8 @@ Available settings in extension popup:
 src/
 ├── background/          # Service worker with ML models
 ├── content/            # Content script for DOM analysis
-├── popup/              # React settings interface
-├── logs/               # Analysis logs page
+├── popup/              # React settings interface with modern UI
+├── logs/               # Analysis logs page with modern design
 └── utils/              # Utilities and helper functions
 ```
 

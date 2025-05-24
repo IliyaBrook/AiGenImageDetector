@@ -70,109 +70,125 @@ function SettingsPage({ onBack }: { onBack: () => void }) {
 		saveSettings({ confidenceThreshold: value })
 	}
 
+	const getThresholdLabel = (value: number) => {
+		if (value < 0.5) return 'Sensitive'
+		if (value < 0.7) return 'Balanced'
+		return 'Conservative'
+	}
+
 	return (
 		<div className='popup-root'>
-			<h2 style={{ margin: 0, fontSize: 18 }}>Settings</h2>
+			<h2><span className="icon">⚙️</span> Settings</h2>
 			
 			{saving && (
-				<div style={{ fontSize: 12, color: '#007acc', marginTop: 4 }}>
-					💾 Auto-saving...
+				<div className="auto-save-indicator">
+					<span className="icon">💾</span>
+					Auto-saving...
 				</div>
 			)}
 			
 			{/* AI Detection Settings */}
-			<div style={{ marginTop: 16, padding: 8, border: '1px solid #ccc', borderRadius: 4 }}>
-				<h3 style={{ margin: '0 0 8px 0', fontSize: 14 }}>AI Detection</h3>
+			<div className="settings-section">
+				<h3><span className="icon">🤖</span> AI Detection</h3>
 				
-				<label style={{ marginBottom: 8, display: 'block' }}>
+				<div className="checkbox-container">
 					<input 
 						type='checkbox' 
+						id="faceDetection"
 						checked={faceDetectionEnabled} 
 						onChange={e => handleFaceDetectionEnabledChange(e.target.checked)} 
 					/>
-					Enable face detection filter
-				</label>
+					<label htmlFor="faceDetection">Enable face detection filter</label>
+				</div>
 				
-				<label style={{ display: 'block', marginBottom: 8 }}>
-					Face Detection Method:
+				<div className="form-group">
+					<label className="form-label">
+						<span className="icon">🔍</span> Face Detection Method:
+					</label>
 					<select 
 						value={faceDetectionMethod} 
 						onChange={e => handleFaceDetectionMethodChange(e.target.value)}
-						style={{ marginLeft: 8, width: '100%', marginTop: 4 }}
 						disabled={!faceDetectionEnabled}
 					>
 						<option value="enhanced_heuristic">Enhanced Heuristic (Fast)</option>
 						<option value="mediapipe">MediaPipe (Accurate)</option>
 					</select>
-				</label>
+				</div>
 				
-				<label style={{ display: 'block', marginBottom: 8 }}>
-					Detection Threshold:
-					<input
-						type="range"
-						min={0.1}
-						max={0.9}
-						step={0.05}
-						value={confidenceThreshold}
-						onChange={e => handleConfidenceThresholdChange(Number(e.target.value))}
-						style={{ width: '100%', marginTop: 4 }}
-					/>
-					<span style={{ fontSize: 12, color: '#666' }}>
-						{(confidenceThreshold * 100).toFixed(0)}% - {confidenceThreshold < 0.5 ? 'Sensitive' : confidenceThreshold < 0.7 ? 'Balanced' : 'Conservative'}
-					</span>
-				</label>
+				<div className="form-group">
+					<label className="form-label">
+						<span className="icon">🎯</span> Detection Threshold:
+					</label>
+					<div className="range-container">
+						<input
+							type="range"
+							min={0.1}
+							max={0.9}
+							step={0.05}
+							value={confidenceThreshold}
+							onChange={e => handleConfidenceThresholdChange(Number(e.target.value))}
+						/>
+						<div className="range-value">
+							{(confidenceThreshold * 100).toFixed(0)}% - {getThresholdLabel(confidenceThreshold)}
+						</div>
+					</div>
+				</div>
 				
 				{faceDetectionEnabled && faceDetectionMethod === 'mediapipe' && (
-					<div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
-						⚠️ MediaPipe uses neural networks for higher accuracy but requires additional ~2MB download
+					<div className="warning-message info">
+						<span className="icon">⚠️</span> MediaPipe uses neural networks for higher accuracy but requires additional ~2MB download
 					</div>
 				)}
 				
 				{!faceDetectionEnabled && (
-					<div style={{ fontSize: 12, color: '#ff6600', marginTop: 4 }}>
-						⚠️ Face detection disabled - all images will be analyzed (may include graphics/drawings)
+					<div className="warning-message warning">
+						<span className="icon">⚠️</span> Face detection disabled - all images will be analyzed (may include graphics/drawings)
 					</div>
 				)}
 			</div>
 
 			{/* Image Size Filter Settings */}
-			<div style={{ marginTop: 16, padding: 8, border: '1px solid #ccc', borderRadius: 4 }}>
-				<h3 style={{ margin: '0 0 8px 0', fontSize: 14 }}>Image Size Filter</h3>
+			<div className="settings-section">
+				<h3><span className="icon">📐</span> Image Size Filter</h3>
 				
-				<label style={{ marginBottom: 8, display: 'block' }}>
-					<input type='checkbox' checked={enabled} onChange={e => handleEnabledChange(e.target.checked)} />
-					Enable minimum image size filter
-				</label>
-				<div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
-					<label>
-						Min width (px):
+				<div className="checkbox-container">
+					<input 
+						type='checkbox' 
+						id="sizeFilter"
+						checked={enabled} 
+						onChange={e => handleEnabledChange(e.target.checked)} 
+					/>
+					<label htmlFor="sizeFilter">Enable minimum image size filter</label>
+				</div>
+				
+				<div className="input-group">
+					<div className="input-field">
+						<label>Min width (px):</label>
 						<input
 							type='number'
 							min={1}
 							value={minWidth}
 							onChange={e => handleMinWidthChange(Math.max(1, Number(e.target.value)))}
-							style={{ width: 60, marginLeft: 4 }}
 							disabled={!enabled}
 							inputMode='numeric'
 						/>
-					</label>
-					<label>
-						Min height (px):
+					</div>
+					<div className="input-field">
+						<label>Min height (px):</label>
 						<input
 							type='number'
 							min={1}
 							value={minHeight}
 							onChange={e => handleMinHeightChange(Math.max(1, Number(e.target.value)))}
-							style={{ width: 60, marginLeft: 4 }}
 							disabled={!enabled}
 							inputMode='numeric'
 						/>
-					</label>
+					</div>
 				</div>
 			</div>
 
-			<button style={{ marginTop: 16 }} onClick={onBack}>
-				Back
+			<button className="secondary-button back-button" onClick={onBack}>
+				<span className="icon">⬅️</span> Back
 			</button>
 		</div>
 	)
@@ -203,15 +219,30 @@ export default function Popup(): JSX.Element {
 	}
 
 	return (
-		<div className='popup-root'>
-			<div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
-				<button onClick={handleViewLogs}>Logs</button>
-				<button onClick={() => setPage('settings')}>Settings</button>
+		<div className='popup-root main-menu'>
+			<h2><span className="icon">🤖</span> AI Image Detector</h2>
+			
+			<div className="button-group">
+				<button className="secondary-button" onClick={handleViewLogs}>
+					<span className="icon">📊</span> Logs
+				</button>
+				<button className="secondary-button" onClick={() => setPage('settings')}>
+					<span className="icon">⚙️</span> Settings
+				</button>
 			</div>
-			<label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-				<input type='checkbox' checked={enabled} onChange={handleToggle} />
-				Enable AI Image Analysis
-			</label>
+			
+			<div className="toggle-container">
+				<label className="toggle-label" htmlFor="mainToggle">
+					<input 
+						id="mainToggle"
+						type='checkbox' 
+						checked={enabled} 
+						onChange={handleToggle} 
+					/>
+					<span className="icon">{enabled ? '✅' : '❌'}</span>
+					Enable AI Image Analysis
+				</label>
+			</div>
 		</div>
 	)
 }
