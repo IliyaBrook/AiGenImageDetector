@@ -8,7 +8,6 @@ function SettingsPage({ onBack }: { onBack: () => void }) {
 	const [faceDetectionEnabled, setFaceDetectionEnabled] = useState<boolean>(true)
 	const [faceDetectionMethod, setFaceDetectionMethod] = useState<string>('enhanced_heuristic')
 	const [confidenceThreshold, setConfidenceThreshold] = useState<number>(0.6)
-	const [saving, setSaving] = useState<boolean>(false)
 
 	useEffect(() => {
 		chrome.storage.local.get(
@@ -30,12 +29,9 @@ function SettingsPage({ onBack }: { onBack: () => void }) {
 			}
 		)
 	}, [])
-
 	// Auto-save function
 	const saveSettings = (updates: any) => {
-		setSaving(true)
 		chrome.storage.local.set(updates, () => {
-			setSaving(false)
 			console.log('Settings auto-saved:', updates)
 		})
 	}
@@ -79,13 +75,6 @@ function SettingsPage({ onBack }: { onBack: () => void }) {
 	return (
 		<div className='popup-root'>
 			<h2><span className="icon">⚙️</span> Settings</h2>
-			
-			{saving && (
-				<div className="auto-save-indicator">
-					<span className="icon">💾</span>
-					Auto-saving...
-				</div>
-			)}
 			
 			{/* AI Detection Settings */}
 			<div className="settings-section">
