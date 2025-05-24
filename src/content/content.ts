@@ -312,37 +312,6 @@ const addLabelToImage = (
 			document.body.appendChild(icon)
 			console.log(`ContentScript: Robot icon added to DOM with ID ${labelId}`)
 
-			try {
-				const notification = document.createElement('div')
-				notification.style.position = 'fixed'
-				notification.style.top = '10px'
-				notification.style.right = '10px'
-				notification.style.backgroundColor = 'rgba(255, 0, 0, 0.9)'
-				notification.style.color = 'white'
-				notification.style.padding = '10px'
-				notification.style.borderRadius = '5px'
-				notification.style.zIndex = '2147483647'
-				notification.style.fontFamily = 'Arial, sans-serif'
-				notification.style.fontSize = '14px'
-				notification.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)'
-
-				const range = 0.05 - -0.2
-				const position = confidence - -0.2
-				const percentage = Math.round((position / range) * 100)
-				const displayPercentage = Math.min(Math.max(percentage, 1), 99)
-
-				notification.textContent = `AI Generated Image Detected! (${displayPercentage}% уверенность)`
-				document.body.appendChild(notification)
-
-				setTimeout(() => {
-					if (document.body.contains(notification)) {
-						document.body.removeChild(notification)
-					}
-				}, 3000)
-			} catch (notifyError) {
-				console.error('ContentScript: Error showing notification:', notifyError)
-			}
-
 			const updateIconPosition = () => {
 				if (icon && document.body.contains(icon)) {
 					const updatedRect = img.getBoundingClientRect()
