@@ -11,6 +11,7 @@
 		"remove-comments": "node remove-comments.cjs && pnpm run format"
 	},
 	"dependencies": {
+		"@tensorflow-models/face-detection": "^1.0.3",
 		"onnxruntime-web": "^1.22.0",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
@@ -25,6 +26,7 @@
 		"@vitejs/plugin-react": "^4.2.1",
 		"autoprefixer": "^10.4.21",
 		"chokidar": "^3.5.3",
+		"cross-env": "7.0.3",
 		"glob": "^11.0.2",
 		"npm-run-all": "^4.1.5",
 		"postcss-nested": "^7.0.2",
@@ -34,7 +36,6 @@
 		"vite": "^5.0.0",
 		"vite-plugin-extension-reloader": "^1.1.6",
 		"vite-plugin-static-copy": "^3.0.0",
-		"ws": "8.18.1",
-		"cross-env": "7.0.3"
+		"ws": "8.18.1"
 	}
 }

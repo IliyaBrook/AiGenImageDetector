@@ -247,107 +247,6 @@ function normalizeAndConvert(data: Uint8ClampedArray, size: number): Float32Arra
 	return floatData
 }
 
-// async function detectFaces(imageData: globalThis.ImageData): Promise<boolean> {
-// 	try {
-// 		const { data, width, height } = imageData
-
-// 		const centerX = Math.floor(width / 2)
-// 		const centerY = Math.floor(height / 2)
-// 		const regionSize = Math.min(width, height) / 4
-
-// 		let skinTonePixels = 0
-// 		let totalPixels = 0
-
-// 		for (
-// 			let y = Math.max(0, centerY - regionSize);
-// 			y < Math.min(height, centerY + regionSize);
-// 			y++
-// 		) {
-// 			for (
-// 				let x = Math.max(0, centerX - regionSize);
-// 				x < Math.min(width, centerX + regionSize);
-// 				x++
-// 			) {
-// 				const index = (y * width + x) * 4
-// 				const r = data[index]
-// 				const g = data[index + 1]
-// 				const b = data[index + 2]
-
-// 				if (
-// 					r > 95 &&
-// 					g > 40 &&
-// 					b > 20 &&
-// 					Math.max(r, g, b) - Math.min(r, g, b) > 15 &&
-// 					Math.abs(r - g) > 15 &&
-// 					r > g &&
-// 					r > b
-// 				) {
-// 					skinTonePixels++
-// 				}
-// 				totalPixels++
-// 			}
-// 		}
-
-// 		const skinToneRatio = skinTonePixels / totalPixels
-// 		const hasFace = skinToneRatio > 0.1
-
-// 		console.log(
-// 			`Background: Face detection - skin tone ratio: ${skinToneRatio.toFixed(3)}, has face: ${hasFace}`
-// 		)
-// 		return hasFace
-// 	} catch (error) {
-// 		console.warn('Background: Error in face detection, proceeding with analysis:', error)
-// 		return true
-// 	}
-// }
-
-// async function isPhotographicImage(imageData: globalThis.ImageData): Promise<boolean> {
-// 	try {
-// 		const { data, width, height } = imageData
-
-// 		const colorSet = new Set<string>()
-// 		let gradientSum = 0
-// 		let gradientCount = 0
-
-// 		for (let y = 0; y < height; y += 10) {
-// 			for (let x = 0; x < width; x += 10) {
-// 				const index = (y * width + x) * 4
-// 				const r = data[index]
-// 				const g = data[index + 1]
-// 				const b = data[index + 2]
-
-// 				const color = `${Math.floor(r / 8) * 8}-${Math.floor(g / 8) * 8}-${Math.floor(b / 8) * 8}`
-// 				colorSet.add(color)
-
-// 				if (x < width - 10 && y < height - 10) {
-// 					const nextXIndex = (y * width + x + 10) * 4
-// 					const nextYIndex = ((y + 10) * width + x) * 4
-
-// 					const gradX = Math.abs(data[index] - data[nextXIndex])
-// 					const gradY = Math.abs(data[index] - data[nextYIndex])
-// 					gradientSum += gradX + gradY
-// 					gradientCount++
-// 				}
-// 			}
-// 		}
-
-// 		const uniqueColors = colorSet.size
-// 		const avgGradient = gradientCount > 0 ? gradientSum / gradientCount : 0
-// 		const sampledPixels = Math.ceil(width / 10) * Math.ceil(height / 10)
-// 		const colorDiversity = uniqueColors / sampledPixels
-
-// 		const isPhoto = colorDiversity > 0.3 && avgGradient > 5
-
-// 		console.log(
-// 			`Background: Image type analysis - colors: ${uniqueColors}, diversity: ${colorDiversity.toFixed(3)}, gradient: ${avgGradient.toFixed(1)}, is photo: ${isPhoto}`
-// 		)
-// 		return isPhoto
-// 	} catch (error) {
-// 		console.warn('Background: Error in image type detection, proceeding with analysis:', error)
-// 		return true
-// 	}
-// }
-
 async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisResult> {
 	try {
 		if (!isInitialized) {
@@ -407,14 +306,29 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 		// 	}
 		// }
 
-		// const hasFaces = await detectFaces(imageData)
-		// if (!hasFaces) {
-		// 	console.log('Background: Skipping analysis - no faces detected in image')
-		// 	return {
-		// 		isAIGenerated: false,
-		// 		confidence: 0,
-		// 	}
-		// }
+		const faceDetectionEnabled = await new Promise<boolean>(resolve => {
+			chrome.storage.local.get(['faceDetectionEnabled'], (data: { faceDetectionEnabled?: boolean }) => {
+				const enabled = data.faceDetectionEnabled !== false
+				console.log('Background: Face detection enabled setting:', enabled)
+				resolve(enabled)
+			})
+		})
+
+		if (faceDetectionEnabled) {
+			const isFaceDetected = await detectFacesAdvanced(imageData)
+			if (!isFaceDetected) {
+				console.log('Background: Skipping analysis - no faces detected in image')
+				return {
+					error: 'Skipped: No faces detected in image',
+					isAIGenerated: false,
+					confidence: 0,
+				}
+			} else {
+				console.log('Background: Face detected, proceeding with AI analysis')
+			}
+		} else {
+			console.log('Background: Face detection disabled, proceeding with AI analysis')
+		}
 
 		const preprocessedImage = await preprocessImage(imageData)
 		const inputTensor = new ortLib.Tensor('float32', preprocessedImage, [1, 3, 224, 224])
@@ -549,7 +463,9 @@ async function analyzeImageWithOnnx(imageUrlOrData: string): Promise<AnalysisRes
 			chrome.storage.local.get(
 				['confidenceThreshold'],
 				(data: { confidenceThreshold?: number }) => {
-					resolve(data.confidenceThreshold || adaptiveThreshold)
+					const threshold = data.confidenceThreshold || adaptiveThreshold
+					console.log('Background: User confidence threshold:', data.confidenceThreshold, 'final threshold:', threshold)
+					resolve(threshold)
 				}
 			)
 		})
@@ -889,3 +805,457 @@ initializeOnnx()
 chrome.runtime.onInstalled.addListener(() => {
 	console.log('AI Image Detector extension installed/updated.')
 })
+
+// Advanced face detection functions
+async function detectFacesAdvanced(imageData: globalThis.ImageData): Promise<boolean> {
+	try {
+		const faceDetectionMethod = await new Promise<string>(resolve => {
+			chrome.storage.local.get(['faceDetectionMethod'], (data: { faceDetectionMethod?: string }) => {
+				resolve(data.faceDetectionMethod || 'enhanced_heuristic')
+			})
+		})
+
+		console.log(`Background: Using face detection method: ${faceDetectionMethod}`)
+
+		switch (faceDetectionMethod) {
+			case 'mediapipe':
+				return await detectFacesWithMediaPipe(imageData)
+			case 'enhanced_heuristic':
+			default:
+				return await detectFacesEnhancedHeuristic(imageData)
+		}
+	} catch (error) {
+		console.warn('Background: Error in face detection, proceeding with analysis:', error)
+		return true // Default to true if detection fails
+	}
+}
+
+async function detectFacesEnhancedHeuristic(imageData: globalThis.ImageData): Promise<boolean> {
+	try {
+		const { data, width, height } = imageData
+		
+		// Multi-stage detection approach
+		const skinRegions = findSkinRegions(data, width, height)
+		const eyeRegions = findEyeRegions(data, width, height)
+		const faceSymmetry = analyzeFaceSymmetry(data, width, height)
+		const faceProportions = analyzeFaceProportions(data, width, height)
+		
+		// Enhanced scoring system
+		let faceScore = 0
+		let maxScore = 0
+
+		// Skin tone analysis (improved)
+		if (skinRegions.totalSkinPixels > 0) {
+			const skinRatio = skinRegions.totalSkinPixels / (width * height)
+			const skinClustering = skinRegions.clusterScore
+			
+			if (skinRatio > 0.02 && skinRatio < 0.8) { // Lowered from 0.05 to 0.02, increased upper bound
+				faceScore += Math.min(skinRatio * 30, 15) // Max 15 points
+				if (skinClustering > 0.4) { // Lowered from 0.6 to 0.4
+					faceScore += 10 // Clustered skin regions
+				}
+			}
+		}
+		maxScore += 25
+
+		// Eye detection (much improved)
+		if (eyeRegions.eyePairs > 0) {
+			faceScore += eyeRegions.eyePairs * 20 // Strong indicator
+			if (eyeRegions.eyeSymmetry > 0.5) { // Lowered from 0.7 to 0.5
+				faceScore += 15 // Symmetric eye placement
+			}
+		}
+		maxScore += 35
+
+		// Face symmetry analysis
+		if (faceSymmetry.horizontalSymmetry > 0.4) {
+			faceScore += faceSymmetry.horizontalSymmetry * 15
+		}
+		if (faceSymmetry.verticalBalance > 0.3) {
+			faceScore += faceSymmetry.verticalBalance * 10
+		}
+		maxScore += 25
+
+		// Face proportions (golden ratio analysis)
+		if (faceProportions.goldenRatioScore > 0.3) {
+			faceScore += faceProportions.goldenRatioScore * 15
+		}
+		maxScore += 15
+
+		const finalScore = faceScore / maxScore
+		const threshold = 0.25 // Lowered threshold for much better sensitivity
+
+		const hasFace = finalScore >= threshold
+
+		console.log(`Background: Enhanced face detection - score: ${finalScore.toFixed(3)}, threshold: ${threshold}, has face: ${hasFace}`, {
+			skinRegions: {
+				ratio: (skinRegions.totalSkinPixels / (width * height)).toFixed(3),
+				clusters: skinRegions.clusterScore.toFixed(3)
+			},
+			eyeRegions: {
+				pairs: eyeRegions.eyePairs,
+				symmetry: eyeRegions.eyeSymmetry.toFixed(3)
+			},
+			faceSymmetry: {
+				horizontal: faceSymmetry.horizontalSymmetry.toFixed(3),
+				vertical: faceSymmetry.verticalBalance.toFixed(3)
+			},
+			faceProportions: {
+				goldenRatio: faceProportions.goldenRatioScore.toFixed(3)
+			}
+		})
+
+		return hasFace
+	} catch (error) {
+		console.warn('Background: Error in enhanced heuristic face detection:', error)
+		return true
+	}
+}
+
+function findSkinRegions(data: Uint8ClampedArray, width: number, height: number) {
+	let totalSkinPixels = 0
+	const skinRegions: Array<{x: number, y: number}> = []
+	
+	// Multiple skin tone detection algorithms
+	for (let y = 0; y < height; y += 2) {
+		for (let x = 0; x < width; x += 2) {
+			const index = (y * width + x) * 4
+			const r = data[index]
+			const g = data[index + 1]
+			const b = data[index + 2]
+
+			if (isSkinTone(r, g, b)) {
+				totalSkinPixels++
+				skinRegions.push({x, y})
+			}
+		}
+	}
+
+	// Analyze skin clustering
+	const clusterScore = analyzeSkinClustering(skinRegions, width, height)
+
+	return {
+		totalSkinPixels,
+		clusterScore,
+		regions: skinRegions
+	}
+}
+
+function isSkinTone(r: number, g: number, b: number): boolean {
+	// Multiple skin detection algorithms combined
+	
+	// Algorithm 1: RGB bounds
+	const rgb1 = r > 95 && g > 40 && b > 20 && 
+		Math.max(r, g, b) - Math.min(r, g, b) > 15 && 
+		Math.abs(r - g) > 15 && r > g && r > b
+
+	// Algorithm 2: HSV conversion
+	const max = Math.max(r, g, b)
+	const min = Math.min(r, g, b)
+	const delta = max - min
+	
+	let h = 0
+	if (delta !== 0) {
+		if (max === r) h = ((g - b) / delta) % 6
+		else if (max === g) h = (b - r) / delta + 2
+		else h = (r - g) / delta + 4
+	}
+	h = h * 60
+	if (h < 0) h += 360
+
+	const s = max === 0 ? 0 : delta / max
+	const v = max / 255
+
+	const hsv = h >= 0 && h <= 50 && s >= 0.23 && s <= 0.68 && v >= 0.35 && v <= 0.95
+
+	// Algorithm 3: YCbCr color space
+	const y = 0.299 * r + 0.587 * g + 0.114 * b
+	const cb = -0.169 * r - 0.331 * g + 0.5 * b + 128
+	const cr = 0.5 * r - 0.419 * g - 0.081 * b + 128
+	
+	const ycbcr = y > 80 && cb >= 77 && cb <= 127 && cr >= 133 && cr <= 173
+
+	// Combine algorithms
+	return rgb1 || hsv || ycbcr
+}
+
+function analyzeSkinClustering(skinRegions: Array<{x: number, y: number}>, width: number, height: number): number {
+	if (skinRegions.length < 5) return 0 // Lowered from 10 to 5
+
+	// Analyze if skin pixels form clusters (faces) rather than scattered noise
+	const gridSize = 20
+	const gridWidth = Math.ceil(width / gridSize)
+	const gridHeight = Math.ceil(height / gridSize)
+	const grid = new Array(gridWidth * gridHeight).fill(0)
+
+	// Count skin pixels in each grid cell
+	for (const region of skinRegions) {
+		const gridX = Math.floor(region.x / gridSize)
+		const gridY = Math.floor(region.y / gridSize)
+		const gridIndex = gridY * gridWidth + gridX
+		if (gridIndex >= 0 && gridIndex < grid.length) {
+			grid[gridIndex]++
+		}
+	}
+
+	// Find cells with significant skin concentration
+	const threshold = skinRegions.length / (gridWidth * gridHeight) * 5 // 5x average
+	const clusteredCells = grid.filter(count => count > threshold).length
+	const totalCells = gridWidth * gridHeight
+
+	return Math.min(clusteredCells / totalCells * 4, 1) // Normalize to 0-1
+}
+
+function findEyeRegions(data: Uint8ClampedArray, width: number, height: number) {
+	const eyeCandidates: Array<{x: number, y: number, strength: number}> = []
+	
+	// Look for dark circular regions (eyes)
+	for (let y = 10; y < height - 10; y += 3) {
+		for (let x = 10; x < width - 10; x += 3) {
+			const eyeStrength = analyzeEyeCandidate(data, x, y, width, height)
+			if (eyeStrength > 0.4) {
+				eyeCandidates.push({x, y, strength: eyeStrength})
+			}
+		}
+	}
+
+	// Find eye pairs
+	const eyePairs = findEyePairs(eyeCandidates, width)
+	const eyeSymmetry = calculateEyeSymmetry(eyePairs, width, height)
+
+	return {
+		eyePairs: eyePairs.length,
+		eyeSymmetry,
+		candidates: eyeCandidates
+	}
+}
+
+function analyzeEyeCandidate(data: Uint8ClampedArray, centerX: number, centerY: number, width: number, height: number): number {
+	const radius = 4
+	let darkCenter = 0
+	let lightSurround = 0
+	let centerPixels = 0
+	let surroundPixels = 0
+
+	// Analyze center (should be dark)
+	for (let dy = -radius; dy <= radius; dy++) {
+		for (let dx = -radius; dx <= radius; dx++) {
+			const distance = Math.sqrt(dx * dx + dy * dy)
+			if (distance <= radius / 2) {
+				const x = centerX + dx
+				const y = centerY + dy
+				if (x >= 0 && x < width && y >= 0 && y < height) {
+					const index = (y * width + x) * 4
+					const brightness = (data[index] + data[index + 1] + data[index + 2]) / 3
+					darkCenter += brightness
+					centerPixels++
+				}
+			}
+		}
+	}
+
+	// Analyze surrounding area (should be lighter)
+	for (let dy = -radius * 2; dy <= radius * 2; dy++) {
+		for (let dx = -radius * 2; dx <= radius * 2; dx++) {
+			const distance = Math.sqrt(dx * dx + dy * dy)
+			if (distance > radius && distance <= radius * 2) {
+				const x = centerX + dx
+				const y = centerY + dy
+				if (x >= 0 && x < width && y >= 0 && y < height) {
+					const index = (y * width + x) * 4
+					const brightness = (data[index] + data[index + 1] + data[index + 2]) / 3
+					lightSurround += brightness
+					surroundPixels++
+				}
+			}
+		}
+	}
+
+	if (centerPixels === 0 || surroundPixels === 0) return 0
+
+	const avgCenter = darkCenter / centerPixels
+	const avgSurround = lightSurround / surroundPixels
+
+	// Eye should have dark center and lighter surround
+	const contrast = (avgSurround - avgCenter) / 255
+	return Math.max(0, Math.min(1, contrast))
+}
+
+function findEyePairs(eyeCandidates: Array<{x: number, y: number, strength: number}>, width: number) {
+	const pairs: Array<{left: any, right: any}> = []
+	
+	for (let i = 0; i < eyeCandidates.length; i++) {
+		for (let j = i + 1; j < eyeCandidates.length; j++) {
+			const eye1 = eyeCandidates[i]
+			const eye2 = eyeCandidates[j]
+			
+			const distance = Math.sqrt((eye1.x - eye2.x) ** 2 + (eye1.y - eye2.y) ** 2)
+			const avgY = (eye1.y + eye2.y) / 2
+			const yDiff = Math.abs(eye1.y - eye2.y)
+			
+			// Eyes should be horizontally aligned and reasonable distance apart
+			if (distance > width * 0.1 && distance < width * 0.6 && yDiff < distance * 0.3) {
+				pairs.push({
+					left: eye1.x < eye2.x ? eye1 : eye2,
+					right: eye1.x < eye2.x ? eye2 : eye1
+				})
+			}
+		}
+	}
+	
+	return pairs
+}
+
+function calculateEyeSymmetry(eyePairs: Array<{left: any, right: any}>, width: number, height: number): number {
+	if (eyePairs.length === 0) return 0
+
+	let symmetryScore = 0
+	for (const pair of eyePairs) {
+		const centerX = (pair.left.x + pair.right.x) / 2
+		const faceCenter = width / 2
+		const symmetry = 1 - Math.abs(centerX - faceCenter) / (width / 2)
+		
+		const yAlignment = 1 - Math.abs(pair.left.y - pair.right.y) / height
+		
+		symmetryScore += (symmetry + yAlignment) / 2
+	}
+	
+	return symmetryScore / eyePairs.length
+}
+
+function analyzeFaceSymmetry(data: Uint8ClampedArray, width: number, height: number) {
+	// Analyze horizontal symmetry (left vs right side)
+	let leftBrightness = 0
+	let rightBrightness = 0
+	let pixelCount = 0
+
+	const centerX = width / 2
+	
+	for (let y = 0; y < height; y += 4) {
+		for (let x = 0; x < centerX; x += 4) {
+			const leftIndex = (y * width + x) * 4
+			const rightIndex = (y * width + (width - 1 - x)) * 4
+			
+			if (leftIndex < data.length - 3 && rightIndex < data.length - 3) {
+				const leftBright = (data[leftIndex] + data[leftIndex + 1] + data[leftIndex + 2]) / 3
+				const rightBright = (data[rightIndex] + data[rightIndex + 1] + data[rightIndex + 2]) / 3
+				
+				leftBrightness += leftBright
+				rightBrightness += rightBright
+				pixelCount++
+			}
+		}
+	}
+
+	const horizontalSymmetry = pixelCount > 0 ? 
+		1 - Math.abs(leftBrightness - rightBrightness) / (leftBrightness + rightBrightness) : 0
+
+	// Analyze vertical balance (top vs bottom)
+	let topBrightness = 0
+	let bottomBrightness = 0
+	const centerY = height / 2
+	let verticalPixels = 0
+
+	for (let y = 0; y < centerY; y += 4) {
+		for (let x = 0; x < width; x += 4) {
+			const topIndex = (y * width + x) * 4
+			const bottomIndex = ((height - 1 - y) * width + x) * 4
+			
+			if (topIndex < data.length - 3 && bottomIndex < data.length - 3) {
+				const topBright = (data[topIndex] + data[topIndex + 1] + data[topIndex + 2]) / 3
+				const bottomBright = (data[bottomIndex] + data[bottomIndex + 1] + data[bottomIndex + 2]) / 3
+				
+				topBrightness += topBright
+				bottomBrightness += bottomBright
+				verticalPixels++
+			}
+		}
+	}
+
+	const verticalBalance = verticalPixels > 0 ? 
+		1 - Math.abs(topBrightness - bottomBrightness) / (topBrightness + bottomBrightness) : 0
+
+	return {
+		horizontalSymmetry: Math.max(0, horizontalSymmetry),
+		verticalBalance: Math.max(0, verticalBalance)
+	}
+}
+
+function analyzeFaceProportions(data: Uint8ClampedArray, width: number, height: number) {
+	// Analyze if the image has face-like proportions using golden ratio
+	const aspectRatio = width / height
+	const goldenRatio = 1.618
+	
+	// Face ideal proportions
+	const idealFaceRatio = 1.4 // Slightly less than golden ratio
+	const ratioDeviation = Math.abs(aspectRatio - idealFaceRatio) / idealFaceRatio
+	const goldenRatioScore = Math.max(0, 1 - ratioDeviation)
+
+	return {
+		aspectRatio,
+		goldenRatioScore
+	}
+}
+
+// MediaPipe Face Detection (modern approach)
+let faceDetectionModel: any = null
+let isLoadingFaceModel = false
+
+async function detectFacesWithMediaPipe(imageData: globalThis.ImageData): Promise<boolean> {
+	try {
+		// Load model if not loaded
+		if (!faceDetectionModel && !isLoadingFaceModel) {
+			isLoadingFaceModel = true
+			try {
+				// Try to import face detection dynamically (may fail in service worker)
+				// @ts-ignore - Optional import that may not be available
+				const faceDetection = await import('@tensorflow-models/face-detection').catch(() => null)
+				
+				if (!faceDetection) {
+					console.warn('Background: Face detection module not available, using heuristic method')
+					isLoadingFaceModel = false
+					return await detectFacesEnhancedHeuristic(imageData)
+				}
+				
+				const model = faceDetection.SupportedModels.MediaPipeFaceDetector
+				const detectorConfig = {
+					runtime: 'tfjs' as const,
+					maxFaces: 5,
+					refineLandmarks: false
+				}
+				
+				faceDetectionModel = await faceDetection.createDetector(model, detectorConfig)
+				console.log('Background: MediaPipe face detection model loaded')
+			} catch (error) {
+				console.warn('Background: Failed to load MediaPipe face detection, falling back to heuristic:', error)
+				isLoadingFaceModel = false
+				return await detectFacesEnhancedHeuristic(imageData)
+			} finally {
+				isLoadingFaceModel = false
+			}
+		}
+
+		if (!faceDetectionModel) {
+			return await detectFacesEnhancedHeuristic(imageData)
+		}
+
+		// Convert ImageData to format expected by face detection
+		const canvas = new OffscreenCanvas(imageData.width, imageData.height)
+		const ctx = canvas.getContext('2d')
+		if (!ctx) throw new Error('Failed to get canvas context')
+		
+		ctx.putImageData(imageData, 0, 0)
+
+		// Detect faces
+		const faces = await faceDetectionModel.estimateFaces(canvas)
+		
+		const hasFaces = faces && faces.length > 0
+		
+		console.log(`Background: MediaPipe face detection - detected ${faces?.length || 0} faces, has faces: ${hasFaces}`)
+		
+		return hasFaces
+	} catch (error) {
+		console.warn('Background: MediaPipe face detection error, falling back to heuristic:', error)
+		return await detectFacesEnhancedHeuristic(imageData)
+	}
+}

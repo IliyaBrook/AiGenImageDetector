@@ -6,7 +6,8 @@
     "storage",
     "scripting",
     "tabs",
-    "notifications"
+    "notifications",
+    "activeTab"
   ],
   "icons": {
     "16": "icon/16.png",
@@ -32,14 +33,16 @@
       "js": [
         "src/content/content.js"
       ],
-      "all_frames": true
+      "all_frames": true,
+      "match_about_blank": true,
+      "run_at": "document_end"
     }
   ],
   "host_permissions": [
     "*://*/*"
   ],
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'self'; connect-src 'self' https:; img-src 'self' data: https: blob:;"
   },
   "web_accessible_resources": [
     {
@@ -49,7 +52,8 @@
         "js/wasm/*",
         "js/*.js",
         "js/*.wasm",
-        "src/background/*.js"
+        "src/background/*.js",
+        "assets/*"
       ],
       "matches": [
         "<all_urls>"

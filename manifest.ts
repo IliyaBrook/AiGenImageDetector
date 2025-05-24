@@ -8,7 +8,7 @@ const manifest: chrome.runtime.ManifestV3 = {
 	version: packageJson.version,
 	description: typedPackageJson.description,
 	manifest_version: 3,
-	permissions: ['storage', 'scripting', 'tabs', 'notifications'],
+	permissions: ['storage', 'scripting', 'tabs', 'notifications', 'activeTab'],
 	icons: {
 		'16': 'icon/16.png',
 		'32': 'icon/32.png',
@@ -28,11 +28,13 @@ const manifest: chrome.runtime.ManifestV3 = {
 			matches: ['http://*/*', 'https://*/*', '<all_urls>'],
 			js: ['src/content/content.js'],
 			all_frames: true,
+			match_about_blank: true,
+			run_at: 'document_end'
 		}
 	],
 	host_permissions: ['*://*/*'],
 	content_security_policy: {
-		extension_pages: 'script-src \'self\' \'wasm-unsafe-eval\'; object-src \'self\';'
+		extension_pages: "script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'self'; connect-src 'self' https:; img-src 'self' data: https: blob:;"
 	},
 	web_accessible_resources: [
 		{
@@ -42,7 +44,8 @@ const manifest: chrome.runtime.ManifestV3 = {
 				'js/wasm/*',
 				'js/*.js',
 				'js/*.wasm',
-				'src/background/*.js'
+				'src/background/*.js',
+				'assets/*'
 			],
 			matches: ['<all_urls>']
 		}

@@ -1,4 +1,5 @@
 console.log('AI Gen Image Detector content script loaded.')
+
 interface AnalysisResult {
 	isAIGenerated: boolean
 	confidence: number
@@ -392,6 +393,16 @@ const setupImageAnalysis = (): void => {
 			const minSizeFilterEnabled = result.minSizeFilterEnabled === true
 			const minWidth = typeof result.minImageWidth === 'number' ? result.minImageWidth : 32
 			const minHeight = typeof result.minImageHeight === 'number' ? result.minImageHeight : 32
+
+			console.log('ContentScript: Size filter settings:', {
+				enabled: minSizeFilterEnabled,
+				minWidth,
+				minHeight,
+				rawValues: {
+					minImageWidth: result.minImageWidth,
+					minImageHeight: result.minImageHeight
+				}
+			})
 
 			const images = Array.from(document.querySelectorAll('img'))
 			console.log(`ContentScript: Found ${images.length} images on the page.`)
